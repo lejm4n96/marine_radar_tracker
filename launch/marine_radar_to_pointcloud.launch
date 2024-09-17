@@ -1,0 +1,12 @@
+<launch>
+    <arg name="package_name" default="marine_radar_tracker"/>
+    <arg name="node_name" default="radar_to_pcl"/>
+    <arg name="radar_in_topic" default="/RADAR/HaloA/data" />
+    <arg name="cloud_out_topic" default="/RADAR/HaloA/cloud" />
+
+    <node name="$(arg node_name)" pkg="$(arg package_name)" type="marine_radar_to_pointcloud" output="screen">
+        <remap from="radar_data" to="$(arg radar_in_topic)" />
+        <remap from="~pointcloud" to="$(arg cloud_out_topic)" />
+    </node>
+
+</launch>
