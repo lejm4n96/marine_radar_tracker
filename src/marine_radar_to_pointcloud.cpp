@@ -9,6 +9,7 @@ ros::Publisher pointcloud_publisher;
 float detection_threshold = 0.0;
 
 float last_increment = 0.0;
+float range_min = 0.0;
 
 void radarSectorCallback(const marine_sensor_msgs::RadarSectorConstPtr &msg)
 {
@@ -40,12 +41,15 @@ void radarSectorCallback(const marine_sensor_msgs::RadarSectorConstPtr &msg)
         if(msg->intensities[i].echoes[j] > detection_threshold)
         {
           auto range = msg->range_min+ j*range_increment;
-          pcl::PointXYZI p;
-          p.x = range*c;
-          p.y = range*s;
-          p.z = 0.0;
-          p.intensity = msg->intensities[i].echoes[j];
-          pc.push_back(p);
+          if (range > range_min) // Filter to exclude points within the min range
+          {
+            pcl::PointXYZI p;
+            p.x = range*c;
+            p.y = range*s;
+            p.z = 0.0;
+            p.intensity = msg->intensities[i].echoes[j];
+            pc.push_back(p);
+          }
         }
       }
     }
@@ -60,6 +64,7 @@ int main(int argc, char* argv[])
   ros::NodeHandle nh, pnh("~");
 
   detection_threshold = pnh.param("detection_threshold", 0.0);
+  range_min = pnh.param("range_min", 6.0);
 
   ros::Subscriber radar_subscriber = nh.subscribe("radar_data", 50, &radarSectorCallback);
 
